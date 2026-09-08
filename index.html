@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScrollRank: Reels, Shorts and TikTok counter for Android</title>
+<meta name="description" content="Counts how many Instagram Reels, YouTube Shorts and TikToks you actually watch, ranks your week, and puts you on a leaderboard. Free on Android.">
+<link rel="canonical" href="https://ehsandevv.github.io/scrollrank-legal/">
+<link rel="icon" href="icon.png">
+<meta name="theme-color" content="#0E1020">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ScrollRank: Reels, Shorts and TikTok counter">
+<meta property="og:description" content="Counts the short videos you actually watch across Instagram Reels, YouTube Shorts and TikTok. No blocking, no limits, just the number and a leaderboard.">
+<meta property="og:url" content="https://ehsandevv.github.io/scrollrank-legal/">
+<meta property="og:image" content="https://ehsandevv.github.io/scrollrank-legal/icon.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* The app's own palette, straight from ui/theme: Grass (tiers 1-2), which is what a new
+     visitor's app looks like. Ink and the platform colours are fixed across all ten tiers. */
+  :root {
+    --ground: #0E1020;
+    --ink: #EEF0FA;
+    --accent: #8E9BFF;
+    --accent-bright: #A9A6FF;
+    --surface: rgba(142, 155, 255, 0.07);
+    --border: rgba(142, 155, 255, 0.18);
+    --muted: rgba(238, 240, 250, 0.68);
+    --faint: rgba(238, 240, 250, 0.45);
+    --gold: #F2C86B;
+    --ig: #A1476F;
+    --yt: #9C4444;
+    --tt: #2F7079;
+    --display: "Bricolage Grotesque", system-ui, sans-serif;
+    --body: "Space Grotesk", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.6;
+    /* The grain the whole app is drawn on: a 1px-radius dot centred in a 3px tile at 4.5%.
+       The app reproduces this exact CSS in a tiled shader (ui/theme/Backdrop.kt). */
+    background-image: radial-gradient(rgba(238, 240, 250, 0.045) 1px, transparent 0);
+    background-size: 3px 3px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 22px; }
+
+  /* Hero -------------------------------------------------------------------- */
+  .hero { position: relative; padding: 56px 0 8px; text-align: center; overflow: hidden; }
+  /* The bloom that sits behind Baggy on Home. */
+  .hero::before {
+    content: ""; position: absolute; left: 50%; top: -60px;
+    width: 520px; height: 520px; transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(110, 125, 255, 0.30) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero > * { position: relative; }
+  .mark { display: flex; align-items: center; justify-content: center; gap: 10px;
+          font-size: 12px; letter-spacing: 3px; color: var(--faint); font-weight: 500; }
+  .mark span { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .icon { width: 108px; height: 108px; border-radius: 26px; margin: 26px 0 18px; }
+  h1 { font-family: var(--display); font-weight: 800; font-size: clamp(34px, 7vw, 52px);
+       line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 14px; }
+  .tag { color: var(--muted); font-size: 17px; margin: 0 auto 28px; max-width: 30em; }
+  /* Google's own badge, self-hosted rather than hotlinked, per their brand guidelines. The
+     asset is 646x250 with its clear space already baked in, so no extra padding here. */
+  .cta { display: inline-block; line-height: 0; }
+  .cta img { width: 216px; height: auto; }
+  .cta:hover { opacity: 0.88; }
+  .free { color: var(--faint); font-size: 13px; margin-top: 12px; }
+
+  /* The Home card, rebuilt in HTML so it needs no screenshot to stay current. */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 26px;
+          padding: 26px 26px 22px; margin: 44px 0 8px; text-align: left; }
+  .card .label { font-size: 11px; letter-spacing: 2.4px; color: var(--faint); font-weight: 500; }
+  .count { font-family: var(--display); font-weight: 800; font-size: clamp(72px, 17vw, 112px);
+           line-height: 0.92; color: var(--accent); margin: 10px 0 20px; }
+  .bar { display: flex; gap: 3px; height: 34px; }
+  .bar div { display: flex; align-items: center; padding-left: 12px; font-size: 13px;
+             font-weight: 700; border-radius: 2px; }
+  .bar div:first-child { border-radius: 8px 2px 2px 8px; }
+  .bar .ig { background: var(--ig); flex: 7; }
+  .bar .yt { background: var(--yt); flex: 3; }
+  .bar .tt { background: var(--tt); flex: 2; }
+  .legend { display: flex; gap: 18px; margin-top: 9px; font-size: 10px; letter-spacing: 1.4px;
+            color: var(--faint); }
+  .legend i { display: inline-block; width: 7px; height: 7px; border-radius: 2px;
+              margin-right: 6px; }
+
+  /* Sections ---------------------------------------------------------------- */
+  h2 { font-family: var(--display); font-weight: 800; font-size: clamp(24px, 4.6vw, 32px);
+       line-height: 1.15; letter-spacing: -0.01em; margin: 64px 0 16px; }
+  h3 { font-family: var(--body); font-weight: 700; font-size: 18px; margin: 34px 0 8px; }
+  p { margin: 0 0 16px; color: var(--muted); }
+  a { color: var(--accent); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(212px, 1fr));
+          margin-top: 22px; }
+  .grid div { background: var(--surface); border: 1px solid var(--border);
+              border-radius: 18px; padding: 18px 20px; }
+  .grid strong { display: block; font-size: 16px; margin-bottom: 5px; }
+  .grid span { color: var(--muted); font-size: 14px; }
+  .rule { height: 1px; background: var(--border); margin: 64px 0 0; }
+  footer { padding: 30px 0 56px; color: var(--faint); font-size: 13px; }
+  footer p { color: var(--faint); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="mark"><span></span>SCROLLRANK</div>
+    <img class="icon" src="icon.png" alt="ScrollRank app icon: Baggy, a purple blob mascot">
+    <h1>Everyone else wants you<br>to stop scrolling.</h1>
+    <p class="tag">ScrollRank just wants to know your number. It counts the short videos you
+      actually watch across Instagram Reels, YouTube Shorts and TikTok, turns your week into
+      a rank, and puts you on a leaderboard against your friends.</p>
+    <a class="cta" href="https://play.google.com/store/apps/details?id=com.scrollrank.app">
+      <img src="play-badge.png" alt="Get it on Google Play" width="646" height="250">
+    </a>
+    <p class="free">Free. No ads, no trackers, no account needed.</p>
+
+    <div class="card">
+      <div class="label">SHORT VIDEOS TODAY</div>
+      <div class="count">247</div>
+      <div class="bar">
+        <div class="ig">146</div>
+        <div class="yt">63</div>
+        <div class="tt">38</div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--ig)"></i>INSTAGRAM</span>
+        <span><i style="background:var(--yt)"></i>YOUTUBE</span>
+        <span><i style="background:var(--tt)"></i>TIKTOK</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div><strong>Counts three apps</strong><span>Instagram Reels, YouTube Shorts and TikTok, split out so you can see which one is doing the damage.</span></div>
+    <div><strong>The 3 second rule</strong><span>A video counts only once it has been on screen for 3 seconds, so half swipes do not pad your score. Ads are not counted.</span></div>
+    <div><strong>10 weekly ranks</strong><span>From Fresh Eyes at the top down to Certified Brainrot. Resets every Monday.</span></div>
+    <div><strong>Friends leaderboard</strong><span>Add friends by username and find out who is rotting hardest this week.</span></div>
+  </div>
+
+  <h2>How many Reels do you watch in a day?</h2>
+  <p>Most people guess somewhere between twenty and fifty. The counts that come back from a
+    real counter are usually higher, because the swipes you do not remember are the ones that
+    add up: the two minutes in a queue, the ten minutes in bed, the half hour that was meant
+    to be five.</p>
+  <p>Screen time tools cannot answer this. They report minutes inside an app, which lumps
+    messages, posts and stories in with the feed, and they cannot separate a Reel from a Story
+    or a Short from an ordinary YouTube video. ScrollRank counts individual short videos, one
+    at a time, in the three apps most of them come from.</p>
+
+  <h2>Questions</h2>
+
+  <h3>Does ScrollRank block anything?</h3>
+  <p>No. There are no limits, no timers and no lockouts. It is a counter. Some people read
+    their weekly number and go install a blocker, and that is a completely reasonable outcome.
+    Others try to beat it. Either way you stop guessing.</p>
+
+  <h3>Does it count YouTube Shorts and TikTok, or only Instagram?</h3>
+  <p>All three. Ordinary YouTube videos are not counted, only Shorts. You can switch any
+    platform off in Settings, after which it is never counted, stored or uploaded.</p>
+
+  <h3>Why does it need the Accessibility permission?</h3>
+  <p>Counting short videos is the app's core feature, and Android provides no narrower API
+    that can do it. The service detects when the Reels, Shorts or TikTok player is on screen
+    and counts a video once it has been there for three seconds. It does not read your
+    messages, posts, passwords or anything you type, it does not record your screen, and it
+    does not act inside any app on your behalf. Which videos you watched, when, and in what
+    order never leaves your phone. See the <a href="privacy-policy.html">privacy policy</a>
+    for the full detail.</p>
+
+  <h3>My count stopped. I have a Xiaomi, Redmi, Poco, Oppo, Realme or Vivo phone.</h3>
+  <p>Those phones close background apps aggressively, which stops the counter while leaving
+    its switch turned on. Open ScrollRank and use the "Fix" banner on the home screen to allow
+    autostart. Recent versions walk you through this during setup on the phones that need
+    it.</p>
+
+  <h3>Is it free? Are there ads?</h3>
+  <p>Free, with no ads, no analytics SDKs and no third-party trackers. You can start as a
+    guest with no account and no email, and delete your account and everything in it from
+    Settings at any time.</p>
+
+  <div class="rule"></div>
+
+  <footer>
+    <p>ScrollRank is made by Muhammad Ehsan, an independent developer.
+      <a href="privacy-policy.html">Privacy policy</a> &middot;
+      <a href="mailto:muhammadehsan231@gmail.com">Contact</a> &middot;
+      <a href="https://play.google.com/store/apps/details?id=com.scrollrank.app">Google Play</a></p>
+    <p>ScrollRank is not affiliated with, endorsed by or sponsored by Instagram, Meta,
+      YouTube, Google or TikTok. All trademarks are the property of their respective
+      owners.</p>
+  </footer>
+
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "ScrollRank",
+      "alternateName": "ScrollRank: Reels Counter",
+      "applicationCategory": "LifestyleApplication",
+      "operatingSystem": "Android",
+      "description": "Counts the short videos you watch across Instagram Reels, YouTube Shorts and TikTok, turns your week into a rank, and puts you on a leaderboard against your friends.",
+      "url": "https://ehsandevv.github.io/scrollrank-legal/",
+      "downloadUrl": "https://play.google.com/store/apps/details?id=com.scrollrank.app",
+      "author": { "@type": "Person", "name": "Muhammad Ehsan" },
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does ScrollRank block Reels or Shorts?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. There are no limits, timers or lockouts. ScrollRank is a counter: it tells you how many short videos you watched and ranks your week against your friends." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does ScrollRank count YouTube Shorts and TikTok?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. It counts Instagram Reels, YouTube Shorts and TikTok. Ordinary YouTube videos are not counted, only Shorts, and any platform can be switched off in Settings." }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does ScrollRank need the Accessibility permission?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Counting short videos is the app's core feature and Android provides no narrower API that can do it. The service detects when the Reels, Shorts or TikTok player is on screen and counts a video after three seconds. It does not read messages, passwords or anything you type, and does not record your screen." }
+        },
+        {
+          "@type": "Question",
+          "name": "How many Reels does the average person watch in a day?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Most people guess twenty to fifty. Real counts tend to come back higher, because the swipes people do not remember are the ones that add up. ScrollRank counts individual short videos rather than estimating minutes." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+</body>
+</html>
