@@ -13,7 +13,7 @@
 </head>
 <body>
 <h1>ScrollRank — Privacy Policy</h1>
-<p><em>Effective date: 8 September 2026</em></p>
+<p><em>Effective date: 9 November 2026</em></p>
 
 <p>ScrollRank is a satirical screen-time app that counts how many short videos you watch
 across Instagram Reels, YouTube Shorts and TikTok, and ranks you against friends. It is
@@ -32,6 +32,14 @@ leaves your phone, and what never does.</p>
     <strong>The raw activity, which videos, when and for how long, stays on your
     device.</strong> Only your aggregate daily counts per platform and total watch seconds
     are uploaded, to place you on the leaderboard.</li>
+  <li><strong>Tracking coverage.</strong> A single percentage per day: how much of that
+    day the counting service was running. It contains no activity, only whether counting was
+    switched on. It is used so that "scroll less" achievements and battles cannot be won by switching
+    tracking off.</li>
+  <li><strong>Achievements and battles.</strong> The achievements you earn, and for Scroll Battles you join
+    with friends: who is in each battle, each player's video count during its 24 hours, and
+    the result. Your achievements are <strong>visible to other users</strong>; a battle is visible
+    only to the people in it.</li>
   <li><strong>Account data.</strong> If you sign in with Google we receive your email
     address and a unique account ID. If you continue as a guest, an anonymous account ID is
     created with no personal details.</li>
@@ -51,18 +59,29 @@ leaves your phone, and what never does.</p>
   <li>No data from other apps on your device.</li>
 </ul>
 
+<h2>Live counter and widget</h2>
+<p>If you turn on the live counter, ScrollRank uses Android's "display over other apps"
+permission to show your own count in a small bubble on top of Instagram Reels, YouTube Shorts
+and TikTok. The home screen widget shows your count and rank for today. Both only display
+numbers the app already has on your phone. Neither reads anything from the screen, and
+neither sends anything anywhere.</p>
+
 <h2>Where data lives</h2>
 <p>Server data (account, daily counts, friendships) is stored with Supabase, which hosts our
 database and server functions on our behalf. All writes go through validated server
 functions; other users can only ever see your public leaderboard profile.</p>
 
 <h2>Third parties</h2>
-<p>We use two service providers, and only for the purposes described here:</p>
+<p>We use these service providers, and only for the purposes described here:</p>
 <ul>
   <li><strong>Supabase</strong> — hosts our database, authentication, and server functions.</li>
   <li><strong>Google Sign-In</strong> — if you choose to sign in with Google, Google
     authenticates you and provides us your email address and account ID. Guest mode does
     not involve Google.</li>
+  <li><strong>Google Play in-app review</strong>: now and then, after a battle win or a new
+    achievement, ScrollRank may show Google Play's own "rate this app" sheet. The rating is
+    handled entirely by Google Play under Google's privacy policy; ScrollRank never sees
+    whether you rated it or what you wrote.</li>
 </ul>
 <p><strong>We do not sell your data, share it with advertisers, or use it for advertising
 or profiling.</strong> There are no ads, analytics SDKs, or trackers in ScrollRank.</p>
